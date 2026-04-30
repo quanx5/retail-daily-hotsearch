@@ -14,10 +14,12 @@ permissions:
   id-token: write
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   PUSH_CHANNEL: ${{ secrets.PUSH_CHANNEL || 'wecom' }}
   WECOM_BOT_WEBHOOK: ${{ secrets.WECOM_BOT_WEBHOOK }}
   SERVER_CHAN_SENDKEY: ${{ secrets.SERVER_CHAN_SENDKEY }}
   PAGE_URL: ${{ secrets.PAGE_URL }}
+
 
 jobs:
   deploy-pages:
