@@ -1,0 +1,15 @@
+{
+  "name": "retail-daily-hotsearch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "零售行业每日热搜 H5 页面与每日微信图片推送自动化",
+  "scripts": {
+    "screenshot": "node scripts/generate-and-push.js screenshot",
+    "push": "node scripts/generate-and-push.js push",
+    "daily": "node scripts/generate-and-push.js daily"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.44.0"
+  },
+  "devDependencies": {}
+}
