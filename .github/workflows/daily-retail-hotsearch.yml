@@ -20,14 +20,12 @@ env:
   SERVER_CHAN_SENDKEY: ${{ secrets.SERVER_CHAN_SENDKEY }}
   PAGE_URL: ${{ secrets.PAGE_URL }}
 
-
 jobs:
   deploy-pages:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
