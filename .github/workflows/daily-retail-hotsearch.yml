@@ -1,0 +1,73 @@
+name: Deploy and Push Daily Retail Hotsearch
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # 每天北京时间 09:00 运行。GitHub Actions 使用 UTC，因此这里是 01:00 UTC。
+    - cron: '0 1 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  PUSH_CHANNEL: ${{ secrets.PUSH_CHANNEL || 'wecom' }}
+  WECOM_BOT_WEBHOOK: ${{ secrets.WECOM_BOT_WEBHOOK }}
+  SERVER_CHAN_SENDKEY: ${{ secrets.SERVER_CHAN_SENDKEY }}
+  PAGE_URL: ${{ secrets.PAGE_URL }}
+
+jobs:
+  deploy-pages:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  daily-push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate image and push to WeChat
+        run: npm run daily
+
+      - name: Upload generated image artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retail-hotsearch-image
+          path: dist/retail-hotsearch.png
+          if-no-files-found: ignore
