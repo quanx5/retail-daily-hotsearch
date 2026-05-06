@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>零售行业每日热搜 - 行业趋势洞察</title>
+    <title>全网热搜榜 - 实时热点追踪</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * {
@@ -381,9 +381,9 @@
     <div class="container">
         <div id="captureArea">
             <header>
-                <div class="header-badge">RETAIL TRENDS</div>
-                <h1>零售行业每日热搜</h1>
-                <p class="subtitle">行业趋势洞察 · 数据驱动决策</p>
+                <div class="header-badge">HOT SEARCH</div>
+                <h1>全网热搜榜</h1>
+                <p class="subtitle">实时热点追踪 · 数据驱动决策</p>
                 <div class="date-display" id="currentDate"></div>
             </header>
 
@@ -395,8 +395,8 @@
             </div>
 
             <footer>
-                <p>数据每日自动更新 · 助力零售决策</p>
-                <p class="watermark">零售行业热搜榜 · 专业版</p>
+                <p>数据每日自动更新 · 助力决策分析</p>
+                <p class="watermark">全网热搜榜 · 专业版</p>
             </footer>
         </div>
 
@@ -430,21 +430,10 @@
                 now.toLocaleDateString('zh-CN', options);
         }
 
-        // 获取零售行业分类
+        // 获取热搜分类
         function getCategory(index) {
-            const categories = ['新零售', '电商', '消费趋势', '品牌动态', '市场洞察', '行业报告', '技术创新', '用户体验'];
+            const categories = ['时事', '经济', '社会', '科技', '娱乐', '体育', '国际', '其他'];
             return categories[index % categories.length];
-        }
-
-        // 格式化时间
-        function formatTime(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000 / 60);
-            
-            if (diff < 60) return `${diff}分钟前`;
-            if (diff < 1440) return `${Math.floor(diff / 60)}小时前`;
-            return date.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
         }
 
         // 生成热度值（格式化大数字）
@@ -457,125 +446,23 @@
 
         // 创建新闻卡片
         function createNewsCard(news, index) {
+            // 如果有描述，显示描述；否则只显示标题和热度
+            const descriptionHTML = news.description ? 
+                `<p class="news-description">${news.description}</p>` : 
+                '';
+            
             return `
-                <div class="news-card" onclick="window.open('${news.url || '#'}', '_blank')">
+                <div class="news-card" onclick="window.open('${news.searchUrl}', '_blank')">
                     <div class="news-rank">${index + 1}</div>
                     <span class="news-category">${news.category || getCategory(index)}</span>
                     <h3 class="news-title">${news.title}</h3>
-                    <p class="news-description">${news.description || ''}</p>
+                    ${descriptionHTML}
                     <div class="news-meta">
-                        <span class="news-source">📊 ${news.source || '今日热搜'}</span>
-                        <span class="news-hot">🔥 ${news.hotFormatted || '热度未知'}</span>
+                        <span class="news-source">🔥 热度 ${news.hotFormatted}</span>
+                        <span class="news-hot">点击查看详情 →</span>
                     </div>
                 </div>
             `;
-        }
-
-        // 备用默认数据（API失败时使用）
-        function getDefaultNews() {
-            const now = new Date();
-            return [
-                {
-                    title: '直播电商GMV突破新高，品牌自播成主流趋势',
-                    description: '2026年Q1直播电商交易额同比增长65%，品牌自播占比超过40%，头部品牌纷纷加码自播团队建设，私域流量运营成为核心竞争力。',
-                    source: '电商观察',
-                    category: '电商',
-                    publishedAt: new Date(now - 30 * 60000).toISOString(),
-                    url: '#',
-                    hot: 1250000,
-                    hotFormatted: '125.0万'
-                },
-                {
-                    title: '即时零售订单量激增，30分钟达成为标配',
-                    description: '美团、饿了么等平台即时零售业务增长迅猛，消费者对配送时效要求不断提升，零售商加速布局前置仓和社区店。',
-                    source: '零售前沿',
-                    category: '新零售',
-                    publishedAt: new Date(now - 90 * 60000).toISOString(),
-                    url: '#',
-                    hot: 980000,
-                    hotFormatted: '98.0万'
-                },
-                {
-                    title: 'AI智能导购系统落地，转化率提升30%',
-                    description: '多家头部零售企业引入AI导购系统，通过智能推荐和个性化服务，显著提升用户购物体验和转化效率。',
-                    source: '科技零售',
-                    category: '技术创新',
-                    publishedAt: new Date(now - 150 * 60000).toISOString(),
-                    url: '#',
-                    hot: 850000,
-                    hotFormatted: '85.0万'
-                },
-                {
-                    title: '新消费品牌集体出海，东南亚市场成热门',
-                    description: '国内新消费品牌加速国际化布局，东南亚、中东等新兴市场成为重点，跨境电商平台助力品牌快速拓展海外业务。',
-                    source: '品牌观察',
-                    category: '品牌动态',
-                    publishedAt: new Date(now - 210 * 60000).toISOString(),
-                    url: '#',
-                    hot: 720000,
-                    hotFormatted: '72.0万'
-                },
-                {
-                    title: '会员制零售模式火热，付费会员突破5000万',
-                    description: '山姆、Costco等会员制商超持续扩张，本土零售企业纷纷推出付费会员体系，会员经济成为零售新增长点。',
-                    source: '商业周刊',
-                    category: '消费趋势',
-                    publishedAt: new Date(now - 270 * 60000).toISOString(),
-                    url: '#',
-                    hot: 650000,
-                    hotFormatted: '65.0万'
-                },
-                {
-                    title: '绿色消费成趋势，可持续产品销量翻倍',
-                    description: '消费者环保意识增强，可持续、环保产品需求激增，品牌ESG表现成为影响购买决策的重要因素。',
-                    source: '消费日报',
-                    category: '市场洞察',
-                    publishedAt: new Date(now - 330 * 60000).toISOString(),
-                    url: '#',
-                    hot: 580000,
-                    hotFormatted: '58.0万'
-                },
-                {
-                    title: '社区团购重新洗牌，精细化运营成关键',
-                    description: '社区团购行业进入理性发展阶段，企业从规模扩张转向精细化运营，供应链效率和用户留存成为核心指标。',
-                    source: '零售内参',
-                    category: '新零售',
-                    publishedAt: new Date(now - 390 * 60000).toISOString(),
-                    url: '#',
-                    hot: 520000,
-                    hotFormatted: '52.0万'
-                },
-                {
-                    title: '元宇宙虚拟店铺兴起，Z世代成消费主力',
-                    description: '多个品牌在元宇宙平台开设虚拟店铺，通过沉浸式体验吸引年轻消费者，虚拟商品交易额持续增长。',
-                    source: '未来零售',
-                    category: '行业报告',
-                    publishedAt: new Date(now - 450 * 60000).toISOString(),
-                    url: '#',
-                    hot: 480000,
-                    hotFormatted: '48.0万'
-                },
-                {
-                    title: '无人零售技术成熟，智能货柜覆盖率提升',
-                    description: '无人便利店、智能货柜等无人零售业态技术日趋成熟，运营成本下降，在写字楼、社区等场景快速普及。',
-                    source: '智慧商业',
-                    category: '技术创新',
-                    publishedAt: new Date(now - 510 * 60000).toISOString(),
-                    url: '#',
-                    hot: 420000,
-                    hotFormatted: '42.0万'
-                },
-                {
-                    title: '私域流量运营升级，企业微信用户破8亿',
-                    description: '零售企业加大私域流量投入，通过企业微信、小程序等工具构建私域生态，实现用户精细化运营和复购提升。',
-                    source: '营销观察',
-                    category: '消费趋势',
-                    publishedAt: new Date(now - 570 * 60000).toISOString(),
-                    url: '#',
-                    hot: 380000,
-                    hotFormatted: '38.0万'
-                }
-            ];
         }
 
         // 获取热搜数据（动态API）
@@ -593,16 +480,22 @@
                     console.log('✅ 成功获取API数据，共', data.result.list.length, '条');
                     
                     // 将API数据格式化为页面需要的格式
-                    return data.result.list.slice(0, 10).map((item, index) => ({
-                        title: item.title || '无标题',
-                        description: item.digest || '',
-                        source: '今日热搜',
-                        category: getCategory(index),
-                        publishedAt: new Date(Date.now() - index * 30 * 60000).toISOString(),
-                        url: '#',
-                        hot: item.hotnum || 0,
-                        hotFormatted: formatHotValue(item.hotnum || 0)
-                    }));
+                    return data.result.list.slice(0, 10).map((item, index) => {
+                        // 创建百度搜索链接（因为API不提供直接URL）
+                        const searchUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(item.title)}`;
+                        
+                        return {
+                            title: item.title || '无标题',
+                            description: item.digest || '',  // 使用digest作为描述
+                            source: '今日热搜',
+                            category: getCategory(index),
+                            publishedAt: new Date(Date.now() - index * 30 * 60000).toISOString(),
+                            url: searchUrl,
+                            searchUrl: searchUrl,
+                            hot: item.hotnum || 0,
+                            hotFormatted: formatHotValue(item.hotnum || 0)
+                        };
+                    });
                 } else {
                     console.warn('⚠️ API返回错误或无数据:', data.reason || '未知错误');
                     throw new Error(data.reason || 'API返回错误');
@@ -612,6 +505,123 @@
                 // API失败时返回默认数据
                 return getDefaultNews();
             }
+        }
+
+        // 备用默认数据（API失败时使用）
+        function getDefaultNews() {
+            const now = new Date();
+            return [
+                {
+                    title: '直播电商GMV突破新高，品牌自播成主流趋势',
+                    description: '2026年Q1直播电商交易额同比增长65%，品牌自播占比超过40%，头部品牌纷纷加码自播团队建设，私域流量运营成为核心竞争力。',
+                    source: '电商观察',
+                    category: '电商',
+                    publishedAt: new Date(now - 30 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('直播电商GMV突破新高')}`,
+                    hot: 1250000,
+                    hotFormatted: '125.0万'
+                },
+                {
+                    title: '即时零售订单量激增，30分钟达成为标配',
+                    description: '美团、饿了么等平台即时零售业务增长迅猛，消费者对配送时效要求不断提升，零售商加速布局前置仓和社区店。',
+                    source: '零售前沿',
+                    category: '新零售',
+                    publishedAt: new Date(now - 90 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('即时零售订单量激增')}`,
+                    hot: 980000,
+                    hotFormatted: '98.0万'
+                },
+                {
+                    title: 'AI智能导购系统落地，转化率提升30%',
+                    description: '多家头部零售企业引入AI导购系统，通过智能推荐和个性化服务，显著提升用户购物体验和转化效率。',
+                    source: '科技零售',
+                    category: '技术创新',
+                    publishedAt: new Date(now - 150 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('AI智能导购系统落地')}`,
+                    hot: 850000,
+                    hotFormatted: '85.0万'
+                },
+                {
+                    title: '新消费品牌集体出海，东南亚市场成热门',
+                    description: '国内新消费品牌加速国际化布局，东南亚、中东等新兴市场成为重点，跨境电商平台助力品牌快速拓展海外业务。',
+                    source: '品牌观察',
+                    category: '品牌动态',
+                    publishedAt: new Date(now - 210 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('新消费品牌集体出海')}`,
+                    hot: 720000,
+                    hotFormatted: '72.0万'
+                },
+                {
+                    title: '会员制零售模式火热，付费会员突破5000万',
+                    description: '山姆、Costco等会员制商超持续扩张，本土零售企业纷纷推出付费会员体系，会员经济成为零售新增长点。',
+                    source: '商业周刊',
+                    category: '消费趋势',
+                    publishedAt: new Date(now - 270 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('会员制零售模式火热')}`,
+                    hot: 650000,
+                    hotFormatted: '65.0万'
+                },
+                {
+                    title: '绿色消费成趋势，可持续产品销量翻倍',
+                    description: '消费者环保意识增强，可持续、环保产品需求激增，品牌ESG表现成为影响购买决策的重要因素。',
+                    source: '消费日报',
+                    category: '市场洞察',
+                    publishedAt: new Date(now - 330 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('绿色消费成趋势')}`,
+                    hot: 580000,
+                    hotFormatted: '58.0万'
+                },
+                {
+                    title: '社区团购重新洗牌，精细化运营成关键',
+                    description: '社区团购行业进入理性发展阶段，企业从规模扩张转向精细化运营，供应链效率和用户留存成为核心指标。',
+                    source: '零售内参',
+                    category: '新零售',
+                    publishedAt: new Date(now - 390 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('社区团购重新洗牌')}`,
+                    hot: 520000,
+                    hotFormatted: '52.0万'
+                },
+                {
+                    title: '元宇宙虚拟店铺兴起，Z世代成消费主力',
+                    description: '多个品牌在元宇宙平台开设虚拟店铺，通过沉浸式体验吸引年轻消费者，虚拟商品交易额持续增长。',
+                    source: '未来零售',
+                    category: '行业报告',
+                    publishedAt: new Date(now - 450 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('元宇宙虚拟店铺兴起')}`,
+                    hot: 480000,
+                    hotFormatted: '48.0万'
+                },
+                {
+                    title: '无人零售技术成熟，智能货柜覆盖率提升',
+                    description: '无人便利店、智能货柜等无人零售业态技术日趋成熟，运营成本下降，在写字楼、社区等场景快速普及。',
+                    source: '智慧商业',
+                    category: '技术创新',
+                    publishedAt: new Date(now - 510 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('无人零售技术成熟')}`,
+                    hot: 420000,
+                    hotFormatted: '42.0万'
+                },
+                {
+                    title: '私域流量运营升级，企业微信用户破8亿',
+                    description: '零售企业加大私域流量投入，通过企业微信、小程序等工具构建私域生态，实现用户精细化运营和复购提升。',
+                    source: '营销观察',
+                    category: '消费趋势',
+                    publishedAt: new Date(now - 570 * 60000).toISOString(),
+                    url: '#',
+                    searchUrl: `https://www.baidu.com/s?wd=${encodeURIComponent('私域流量运营升级')}`,
+                    hot: 380000,
+                    hotFormatted: '38.0万'
+                }
+            ];
         }
 
         // 渲染新闻列表
@@ -656,7 +666,7 @@
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     const date = new Date().toLocaleDateString('zh-CN').replace(/\//g, '-');
-                    link.download = `零售行业热搜-${date}.png`;
+                    link.download = `全网热搜-${date}.png`;
                     link.href = url;
                     link.click();
                     URL.revokeObjectURL(url);
