@@ -13,7 +13,7 @@ function getTodayLabel() {
 }
 
 function getCategory(index) {
-  const categories = ['新零售', '电商', '消费趋势', '品牌动态', '市场洞察', '行业报告', '技术创新', '用户体验'];
+  const categories = ['时事', '经济', '社会', '科技', '娱乐', '体育', '国际', '其他'];
   return categories[index % categories.length];
 }
 
@@ -134,7 +134,7 @@ async function getRetailNews() {
       // 将API数据格式化为需要的格式
       return data.result.list.slice(0, 10).map((item, index) => ({
         title: item.title || '无标题',
-        description: item.digest || '',
+        description: item.digest || '',  // 使用digest作为描述
         source: '今日热搜',
         category: getCategory(index),
         publishedAt: new Date(Date.now() - index * 30 * 60000),
@@ -155,19 +155,23 @@ async function buildMarkdownBody() {
   const news = await getRetailNews();
   const pageUrl = process.env.PAGE_URL || 'https://quanx5.github.io/retail-daily-hotsearch/';
 
-  let md = `## 🛒 零售行业每日热搜\n`;
-  md += `> **${getTodayLabel()}** ｜ 共 ${news.length} 条行业动态\n\n`;
+  let md = `## 🔥 全网热搜榜\n`;
+  md += `> **${getTodayLabel()}** ｜ 共 ${news.length} 条热点\n\n`;
 
   news.forEach((item, index) => {
     const rank = index + 1;
     const medal = rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : `**#${rank}**`;
+    // 如果有描述，显示描述；否则只显示标题
+    const content = item.description ? `${item.description}` : item.title;
     md += `${medal} **[${item.category}] ${item.title}**\n`;
-    md += `> ${item.description}\n`;
-    md += `📊 ${item.source} ｜ 🔥 ${item.hotFormatted} ｜ ${formatTime(item.publishedAt)}\n\n`;
+    if (item.description) {
+      md += `> ${item.description}\n`;
+    }
+    md += `🔥 ${item.hotFormatted} ｜ ${formatTime(item.publishedAt)}\n\n`;
   });
 
   md += `---\n`;
-  md += `📖 查看完整榜单：[零售行业每日热搜](${pageUrl}) ｜ 每日 09:00 自动推送`;
+  md += `📖 查看完整榜单：[全网热搜榜](${pageUrl}) ｜ 每日 09:00 自动推送`;
 
   return md;
 }
@@ -206,13 +210,15 @@ async function pushToServerChan() {
   const news = await getRetailNews();
   const pageUrl = process.env.PAGE_URL || 'https://quanx5.github.io/retail-daily-hotsearch/';
 
-  const title = `零售行业每日热搜 ${getTodayLabel()}`;
+  const title = `全网热搜榜 ${getTodayLabel()}`;
 
   let desp = `## 今日热点\n\n`;
   news.forEach((item, index) => {
     desp += `### ${index + 1}. [${item.category}] ${item.title}\n\n`;
-    desp += `${item.description}\n\n`;
-    desp += `> 📊 ${item.source} ｜ 🔥 ${item.hotFormatted} ｜ ${formatTime(item.publishedAt)}\n\n---\n\n`;
+    if (item.description) {
+      desp += `${item.description}\n\n`;
+    }
+    desp += `> 🔥 ${item.hotFormatted} ｜ ${formatTime(item.publishedAt)}\n\n---\n\n`;
   });
   desp += `\n[查看完整榜单](${pageUrl})`;
 
