@@ -1,6 +1,59 @@
 const pushChannel = (process.env.PUSH_CHANNEL || 'wecom').toLowerCase();
 const JUHE_API_KEY = '74b842ddef4a8acdc200374f06e17343';
 const JUHE_API_URL = 'https://apis.juhe.cn/fapigx/networkhot/query';
+const REQUEST_TIMEOUT_MS = 15000;
+const PUSH_MAX_ATTEMPTS = 3;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendWithRetry(label, url, options, validateResponse) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= PUSH_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+      });
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${text}`);
+      }
+
+      if (validateResponse) {
+        validateResponse(text);
+      }
+
+      console.log(`✅ ${label} push result:`, text);
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt < PUSH_MAX_ATTEMPTS) {
+        console.warn(`⚠️ ${label} push attempt ${attempt} failed: ${error.message}. Retrying...`);
+        await sleep(attempt * 1000);
+      }
+    }
+  }
+
+  throw new Error(`${label} push failed after ${PUSH_MAX_ATTEMPTS} attempts: ${lastError.message}`);
+}
+
+function validateWeComResponse(text) {
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch (error) {
+    throw new Error(`Invalid WeCom response: ${text.slice(0, 200)}`);
+  }
+
+  if (data.errcode !== 0) {
+    throw new Error(`WeCom errcode ${data.errcode}: ${data.errmsg || 'unknown error'}`);
+  }
+}
 
 function getTodayLabel() {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -124,7 +177,9 @@ async function getRetailNews() {
     const url = `${JUHE_API_URL}?key=${JUHE_API_KEY}`;
     console.log('🔄 正在调用聚合数据API...');
     
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+    });
     const data = await response.json();
     
     // 检查API返回状态
@@ -184,21 +239,14 @@ async function pushToWeCom() {
 
   const markdownContent = await buildMarkdownBody();
 
-  const result = await fetch(webhook, {
+  await sendWithRetry('WeCom', webhook, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       msgtype: 'markdown',
       markdown: { content: markdownContent }
     })
-  });
-
-  const text = await result.text();
-  if (!result.ok) {
-    throw new Error(`HTTP ${result.status}: ${text}`);
-  }
-
-  console.log('✅ WeCom push result:', text);
+  }, validateWeComResponse);
 }
 
 async function pushToServerChan() {
@@ -224,18 +272,11 @@ async function pushToServerChan() {
 
   const url = `https://sctapi.ftqq.com/${sendKey}.send`;
 
-  const result = await fetch(url, {
+  await sendWithRetry('ServerChan', url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ title, desp })
   });
-
-  const text = await result.text();
-  if (!result.ok) {
-    throw new Error(`ServerChan HTTP ${result.status}: ${text}`);
-  }
-
-  console.log('✅ ServerChan push result:', text);
 }
 
 async function main() {
